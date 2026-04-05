@@ -1,4 +1,5 @@
 import { Clock, DollarSign, Users, Zap } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNav } from "../App";
@@ -32,7 +33,7 @@ export default function FeedPage() {
         {/* Stories row */}
         <section
           data-ocid="feed.stories.panel"
-          className="rounded-3xl border border-black/5 p-4 shadow-sm"
+          className="rounded-3xl border border-black/5 p-4 shadow-sm card-hover"
           style={{ background: "#ffffff" }}
         >
           <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
@@ -75,13 +76,17 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* Right sidebar */}
+      {/* Right sidebar — staggered fade in from right */}
       <aside className="hidden lg:flex flex-col gap-4 w-72 shrink-0">
         {/* Freelance Marketplace preview */}
-        <section
+        <motion.section
           data-ocid="feed.marketplace.panel"
-          className="rounded-3xl border border-black/5 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+          className="rounded-3xl border border-black/5 overflow-hidden shadow-sm card-hover"
           style={{ background: "#ffffff" }}
+          initial={{ opacity: 0, x: 24 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0, ease: "easeOut" }}
         >
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-pn-card-border">
             <h2 className="text-sm font-semibold text-slate-800">
@@ -111,7 +116,7 @@ export default function FeedPage() {
                 <div className="flex items-center gap-3 text-slate-400 text-[10px] mb-2">
                   <span className="flex items-center gap-0.5">
                     <DollarSign size={9} />
-                    {(listing.budgetMin / 1000).toFixed(0)}k–
+                    {(listing.budgetMin / 1000).toFixed(0)}k\u2013
                     {(listing.budgetMax / 1000).toFixed(0)}k
                   </span>
                   <span className="flex items-center gap-0.5">
@@ -134,18 +139,22 @@ export default function FeedPage() {
                       : { background: "oklch(0.75 0.115 75)" }
                   }
                 >
-                  {applied.has(listing.id) ? "✓ Applied" : "Apply Now"}
+                  {applied.has(listing.id) ? "\u2713 Applied" : "Apply Now"}
                 </button>
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* Live Sessions */}
-        <section
+        <motion.section
           data-ocid="feed.live.panel"
-          className="rounded-3xl border border-black/5 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+          className="rounded-3xl border border-black/5 overflow-hidden shadow-sm card-hover"
           style={{ background: "#ffffff" }}
+          initial={{ opacity: 0, x: 24 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
         >
           <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-pn-card-border">
             <h2 className="text-sm font-semibold text-slate-800">
@@ -196,12 +205,16 @@ export default function FeedPage() {
               );
             })}
           </div>
-        </section>
+        </motion.section>
 
         {/* Suggested connections */}
-        <section
-          className="rounded-3xl border border-black/5 p-4 shadow-sm"
+        <motion.section
+          className="rounded-3xl border border-black/5 p-4 shadow-sm card-hover"
           style={{ background: "#ffffff" }}
+          initial={{ opacity: 0, x: 24 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
         >
           <h2 className="text-sm font-semibold text-slate-800 mb-3">
             People to Follow
@@ -240,7 +253,7 @@ export default function FeedPage() {
                 </div>
               ))}
           </div>
-        </section>
+        </motion.section>
       </aside>
 
       {/* Story viewer modal */}

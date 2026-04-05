@@ -71,19 +71,28 @@ export default function StoriesPage() {
   return (
     <div className="p-4 max-w-5xl mx-auto" data-ocid="stories.page">
       {/* Page header */}
-      <div className="mb-6">
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.38, ease: "easeOut" }}
+      >
         <h1 className="text-2xl font-bold text-pn-text">
           Professional Stories
         </h1>
         <p className="text-pn-muted text-sm mt-1">
           Startup highlights, milestones &amp; industry insights
         </p>
-      </div>
+      </motion.div>
 
-      {/* Stories rings row — white card */}
-      <section
-        className="rounded-3xl border border-black/5 p-4 mb-6 overflow-hidden shadow-sm"
+      {/* Stories rings row — white card with grab-scroll feel */}
+      <motion.section
+        className="rounded-3xl border border-black/5 p-4 mb-6 overflow-hidden shadow-sm card-hover"
         style={{ background: "#ffffff" }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.38, delay: 0.06, ease: "easeOut" }}
+        whileTap={{ cursor: "grabbing" }}
       >
         <div className="flex items-center justify-between mb-3">
           <span className="text-slate-700 text-sm font-semibold">
@@ -144,10 +153,15 @@ export default function StoriesPage() {
             );
           })}
         </div>
-      </section>
+      </motion.section>
 
       {/* Section header + filter pills */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      <motion.div
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
+      >
         <h2 className="text-pn-text font-bold text-lg">Trending Stories</h2>
         <div
           className="flex gap-2 overflow-x-auto pb-1 scrollbar-none"
@@ -171,7 +185,7 @@ export default function StoriesPage() {
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Story cards grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -186,7 +200,7 @@ export default function StoriesPage() {
             <motion.div
               key={story.id}
               data-ocid={`stories.card.item.${i + 1}`}
-              className="rounded-3xl border border-black/5 overflow-hidden group cursor-pointer animate-fade-in-up shadow-sm hover:shadow-md"
+              className="rounded-3xl border border-black/5 overflow-hidden group cursor-pointer shadow-sm card-hover"
               style={{ background: "#ffffff" }}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -299,29 +313,20 @@ export default function StoriesPage() {
                 </div>
 
                 {/* Caption */}
-                <p className="text-slate-700 text-xs leading-relaxed line-clamp-2 mb-2.5">
+                <p className="text-slate-700 text-xs leading-relaxed line-clamp-2 mb-3">
                   {story.caption}
                 </p>
 
-                {/* Footer meta */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-[10px] text-slate-400">
-                    <Eye size={10} />
-                    <span>{story.viewCount.toLocaleString()} views</span>
-                    <span className="mx-1 opacity-50">·</span>
-                    <span>{story.createdAt}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setViewing(storyIdx)}
-                    className="text-[10px] font-semibold px-3 py-1 rounded-full transition-colors"
-                    style={{
-                      background: "oklch(0.65 0.18 28 / 0.10)",
-                      color: "oklch(0.55 0.18 28)",
-                    }}
-                  >
-                    View Story
-                  </button>
+                {/* Footer stats */}
+                <div className="flex items-center gap-3 text-slate-400 text-[10px]">
+                  <span className="flex items-center gap-1">
+                    <Eye size={10} /> {story.viewCount?.toLocaleString() ?? 0}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Heart size={10} />
+                    {likedIds.has(story.id) ? "Liked" : "Like"}
+                  </span>
+                  <span className="ml-auto">{story.createdAt}</span>
                 </div>
               </div>
             </motion.div>
@@ -329,19 +334,7 @@ export default function StoriesPage() {
         })}
       </div>
 
-      {filteredStories.length === 0 && (
-        <div
-          className="text-center py-16 rounded-3xl border border-black/5 shadow-sm"
-          style={{ background: "#ffffff" }}
-          data-ocid="stories.empty_state"
-        >
-          <div className="text-4xl mb-3">📭</div>
-          <p className="text-slate-500 text-sm">
-            No stories in this category yet.
-          </p>
-        </div>
-      )}
-
+      {/* Story viewer */}
       {viewing !== null && (
         <StoryViewer
           stories={stories}

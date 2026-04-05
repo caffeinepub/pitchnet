@@ -1,4 +1,5 @@
 import { Briefcase, CheckCircle, Clock, DollarSign, Users } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNav } from "../App";
@@ -22,7 +23,7 @@ export default function MarketplacePage() {
     setTimeout(() => {
       setApplied((s) => new Set([...s, id]));
       setRipple(null);
-      toast.success("✨ Application submitted!", {
+      toast.success("\u2728 Application submitted!", {
         description: `You applied to "${title}". Good luck!`,
       });
     }, 500);
@@ -30,7 +31,13 @@ export default function MarketplacePage() {
 
   return (
     <div className="p-4 max-w-6xl mx-auto" data-ocid="marketplace.page">
-      <div className="mb-6">
+      {/* Page header */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
         <h1 className="text-2xl font-bold text-pn-text">
           Freelance Marketplace
         </h1>
@@ -38,12 +45,15 @@ export default function MarketplacePage() {
           {marketplaceListings.length} open opportunities across design,
           development, and marketing
         </p>
-      </div>
+      </motion.div>
 
       {/* Category filters */}
-      <div
+      <motion.div
         className="flex gap-2 mb-6 flex-wrap"
         data-ocid="marketplace.filter.tab"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.08, ease: "easeOut" }}
       >
         {categories.map((cat) => (
           <button
@@ -54,7 +64,7 @@ export default function MarketplacePage() {
             className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
               activeCategory === cat
                 ? "text-white"
-                : "text-slate-500 border border-slate-200 bg-white hover:border-pn-teal hover:text-slate-700"
+                : "text-slate-500 border border-slate-200 bg-white hover:border-pn-teal hover:text-slate-700 hover:bg-slate-50"
             }`}
             style={
               activeCategory === cat
@@ -65,7 +75,7 @@ export default function MarketplacePage() {
             {cat}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Listings grid */}
       {filtered.length === 0 ? (
@@ -83,11 +93,20 @@ export default function MarketplacePage() {
             const isApplied = applied.has(listing.id);
             const isRippling = ripple === listing.id;
             return (
-              <div
+              <motion.div
                 key={listing.id}
                 data-ocid={`marketplace.listing.item.${i + 1}`}
-                className="rounded-2xl border border-pn-card-border overflow-hidden flex flex-col hover:-translate-y-1 hover:border-pn-teal transition-all duration-200 group shadow-card"
+                className="rounded-2xl border border-pn-card-border overflow-hidden flex flex-col shadow-card card-hover"
                 style={{ background: "#ffffff" }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  duration: 0.38,
+                  delay: i * 0.07,
+                  ease: "easeOut",
+                }}
+                whileHover={{ y: -4, transition: { duration: 0.15 } }}
               >
                 {/* Category badge */}
                 <div className="px-4 pt-4 pb-0 flex items-center justify-between">
@@ -132,7 +151,7 @@ export default function MarketplacePage() {
                 <div className="px-4 py-3 border-t border-pn-card-border flex items-center gap-4 text-slate-400 text-xs">
                   <span className="flex items-center gap-1">
                     <DollarSign size={11} />$
-                    {(listing.budgetMin / 1000).toFixed(0)}k–$
+                    {(listing.budgetMin / 1000).toFixed(0)}k\u2013$
                     {(listing.budgetMax / 1000).toFixed(0)}k
                   </span>
                   <span className="flex items-center gap-1">
@@ -199,7 +218,7 @@ export default function MarketplacePage() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

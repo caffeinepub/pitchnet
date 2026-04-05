@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Eye, Heart, Share2, X } from "lucide-react";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNav } from "../App";
 import { profiles } from "../data/mockData";
 import type { Story } from "../types";
@@ -12,11 +12,11 @@ interface Props {
 }
 
 const storyTypeMeta: Record<string, { label: string; emoji: string }> = {
-  pitch: { label: "Pitch", emoji: "🚀" },
-  insight: { label: "Insight", emoji: "📊" },
-  showcase: { label: "Showcase", emoji: "🎨" },
-  milestone: { label: "Milestone", emoji: "🎉" },
-  event: { label: "Event", emoji: "🌍" },
+  pitch: { label: "Pitch", emoji: "\ud83d\ude80" },
+  insight: { label: "Insight", emoji: "\ud83d\udcca" },
+  showcase: { label: "Showcase", emoji: "\ud83c\udfa8" },
+  milestone: { label: "Milestone", emoji: "\ud83c\udf89" },
+  event: { label: "Event", emoji: "\ud83c\udf0d" },
 };
 
 export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
@@ -25,9 +25,12 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
   const [progress, setProgress] = useState(0);
   const [liked, setLiked] = useState(false);
   const [followed, setFollowed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const current = stories[index];
   const author = profiles.find((p) => p.id === current?.authorId);
+  const isVideo =
+    current?.mediaType === "video" || current?.mediaUrl?.endsWith(".mp4");
 
   const next = useCallback(() => {
     if (index < stories.length - 1) {
@@ -52,6 +55,10 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
 
   useEffect(() => {
     setProgress(0);
+    if (isVideo) {
+      const timeout = setTimeout(() => next(), 15000);
+      return () => clearTimeout(timeout);
+    }
     const interval = setInterval(() => {
       setProgress((p) => {
         if (p >= 100) {
@@ -63,7 +70,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
       });
     }, 70);
     return () => clearInterval(interval);
-  }, [next]);
+  }, [next, isVideo]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -74,6 +81,14 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose, next, prev]);
+
+  // Autoplay video on story change — only depends on isVideo (index change triggers re-render + new current)
+  useEffect(() => {
+    if (isVideo && videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isVideo]);
 
   if (!current || !author) return null;
 
@@ -119,14 +134,24 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
           ))}
         </div>
 
-        {/* Media */}
-        <img
-          src={current.mediaUrl}
-          alt={current.caption}
-          className="w-full h-full object-cover"
-        />
+        {isVideo ? (
+          <video
+            ref={videoRef}
+            src={current.mediaUrl}
+            className="w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={current.mediaUrl}
+            alt={current.caption}
+            className="w-full h-full object-cover"
+          />
+        )}
 
-        {/* Overlay gradient */}
         <div
           className="absolute inset-0"
           style={{
@@ -135,7 +160,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
           }}
         />
 
-        {/* Story type badge */}
         {meta && (
           <div className="absolute top-8 left-3 z-10">
             <span
@@ -147,9 +171,18 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
           </div>
         )}
 
-        {/* Header — author info */}
+        {isVideo && (
+          <div className="absolute top-8 right-12 z-10">
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+              style={{ background: "rgba(0,0,0,0.5)" }}
+            >
+              \u25b6 Video
+            </span>
+          </div>
+        )}
+
         <div className="absolute top-8 left-0 right-3 flex items-center gap-2 z-10 pl-3 pr-2">
-          {/* spacer for type badge */}
           <div className="w-0" />
           <div className="flex-1" />
           <button
@@ -168,7 +201,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
               {author.displayName}
             </div>
             <div className="text-white/60 text-[10px]">
-              {author.role} · {current.createdAt}
+              {author.role} \u00b7 {current.createdAt}
             </div>
           </div>
           <button
@@ -181,9 +214,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
           </button>
         </div>
 
-        {/* Bottom content */}
         <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-5">
-          {/* Caption + like */}
           <div className="flex items-start gap-2 mb-3">
             <p className="flex-1 text-white text-sm font-medium leading-snug">
               {current.caption}
@@ -208,13 +239,11 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
             </motion.button>
           </div>
 
-          {/* View count */}
           <div className="flex items-center gap-1 mb-4 text-white/50 text-xs">
             <Eye size={11} />
             <span>{current.viewCount.toLocaleString()} views</span>
           </div>
 
-          {/* Action buttons row */}
           <div className="flex gap-2">
             <motion.button
               type="button"
@@ -244,7 +273,6 @@ export default function StoryViewer({ stories, initialIndex, onClose }: Props) {
           </div>
         </div>
 
-        {/* Nav buttons */}
         {index > 0 && (
           <button
             type="button"

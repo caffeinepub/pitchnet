@@ -1,4 +1,5 @@
 import { Calendar, Clock, Mic, Users } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useNav } from "../App";
@@ -10,7 +11,14 @@ interface FloatingEmoji {
   x: number;
 }
 
-const REACTION_EMOJIS = ["💼", "📈", "🌍", "🚀", "👏", "⭐"];
+const REACTION_EMOJIS = [
+  "\uD83D\uDCBC",
+  "\uD83D\uDCC8",
+  "\uD83C\uDF0D",
+  "\uD83D\uDE80",
+  "\uD83D\uDC4F",
+  "\u2B50",
+];
 
 export default function LivePage() {
   const { viewProfile } = useNav();
@@ -44,10 +52,13 @@ export default function LivePage() {
     );
     setJoined((s) => new Set([...s, sessionId]));
     launchEmojis();
-    toast.success(`🎤 Joined "${title}"!`, {
+    toast.success(`\uD83C\uDFA4 Joined "${title}"!`, {
       description: "You're now in the session. Welcome!",
     });
   };
+
+  // Suppress unused import warning
+  void useEffect;
 
   const liveSess = sessions.filter((s) => s.isLive);
   const upcomingSess = sessions.filter((s) => !s.isLive);
@@ -67,36 +78,57 @@ export default function LivePage() {
         ))}
       </div>
 
-      <div className="mb-6">
+      {/* Page header */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
         <h1 className="text-2xl font-bold text-pn-text">
           Live &amp; Upcoming Sessions
         </h1>
         <p className="text-pn-muted text-sm mt-1">
           Industry Q&amp;As, startup panels, and expert masterclasses
         </p>
-      </div>
+      </motion.div>
 
       {/* LIVE NOW section */}
       {liveSess.length > 0 && (
         <section className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
+          <motion.div
+            className="flex items-center gap-2 mb-4"
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, delay: 0.1 }}
+          >
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse-live" />
             <h2 className="text-base font-bold text-pn-text">LIVE NOW</h2>
-          </div>
+          </motion.div>
           {liveSess.map((session) => {
             const host = profiles.find((p) => p.id === session.hostId);
             const isJoined = joined.has(session.id);
             return (
-              <div
+              <motion.div
                 key={session.id}
                 data-ocid={"live.session.item.1"}
-                className="rounded-2xl border-2 overflow-hidden shadow-card"
+                className="rounded-2xl border-2 overflow-hidden shadow-card card-hover"
                 style={{
                   background: "#ffffff",
                   borderColor: "oklch(0.65 0.22 22 / 0.5)",
                   boxShadow:
                     "0 0 24px oklch(0.65 0.22 22 / 0.12), 0 4px 24px rgba(0,0,0,0.08)",
                 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.15,
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 22,
+                }}
+                whileHover={{ y: -3, transition: { duration: 0.15 } }}
               >
                 <div className="relative">
                   <img
@@ -111,7 +143,13 @@ export default function LivePage() {
                         "linear-gradient(to bottom, transparent 40%, rgba(255,255,255,0.95) 100%)",
                     }}
                   />
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                  <div
+                    className="absolute top-3 left-3 flex items-center gap-1.5 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full"
+                    style={{
+                      boxShadow:
+                        "0 0 10px rgba(239, 68, 68, 0.7), 0 0 20px rgba(239, 68, 68, 0.4)",
+                    }}
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse-live" />
                     LIVE
                   </div>
@@ -164,11 +202,11 @@ export default function LivePage() {
                           : "bg-red-500 hover:bg-red-400 text-white"
                       }`}
                     >
-                      {isJoined ? "✓ Joined" : "🎤 Join Live"}
+                      {isJoined ? "\u2713 Joined" : "\uD83C\uDFA4 Join Live"}
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </section>
@@ -176,19 +214,33 @@ export default function LivePage() {
 
       {/* Upcoming Sessions */}
       <section>
-        <h2 className="text-base font-bold text-pn-text mb-4">
+        <motion.h2
+          className="text-base font-bold text-pn-text mb-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
           Upcoming Sessions
-        </h2>
+        </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {upcomingSess.map((session, i) => {
             const host = profiles.find((p) => p.id === session.hostId);
             const isJoined = joined.has(session.id);
             return (
-              <div
+              <motion.div
                 key={session.id}
                 data-ocid={`live.session.item.${i + 2}`}
-                className="rounded-2xl border border-pn-card-border overflow-hidden hover:-translate-y-1 hover:border-pn-teal transition-all duration-200 shadow-card"
+                className="rounded-2xl border border-pn-card-border overflow-hidden shadow-card card-hover"
                 style={{ background: "#ffffff" }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  duration: 0.38,
+                  delay: i * 0.08,
+                  ease: "easeOut",
+                }}
+                whileHover={{ y: -3, transition: { duration: 0.15 } }}
               >
                 <div className="relative">
                   <img
@@ -250,11 +302,11 @@ export default function LivePage() {
                         isJoined ? {} : { background: "oklch(0.75 0.115 75)" }
                       }
                     >
-                      {isJoined ? "✓ RSVP'd" : "RSVP"}
+                      {isJoined ? "\u2713 RSVP'd" : "RSVP"}
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

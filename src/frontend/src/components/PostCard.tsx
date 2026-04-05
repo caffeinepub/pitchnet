@@ -18,6 +18,8 @@ export default function PostCard({ post, index = 0 }: Props) {
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  const isVideo = post.mediaType === "video" || post.mediaUrl?.endsWith(".mp4");
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -50,10 +52,10 @@ export default function PostCard({ post, index = 0 }: Props) {
     <div
       ref={ref}
       data-ocid={`feed.post.item.${index + 1}`}
-      className={`rounded-3xl border overflow-hidden transition-all duration-300 ${
+      className={`rounded-3xl border overflow-hidden transition-all duration-300 card-hover ${
         post.isAchievement
           ? "gold-glow-border border-pn-gold/50 shadow-md"
-          : "border-black/5 shadow-sm hover:shadow-xl hover:shadow-black/10"
+          : "border-black/5 shadow-sm"
       } ${visible ? "animate-fade-in-up opacity-100" : "opacity-0"}`}
       style={{
         background: "#ffffff",
@@ -61,7 +63,6 @@ export default function PostCard({ post, index = 0 }: Props) {
         transform: visible ? undefined : "translateY(20px)",
       }}
     >
-      {/* Achievement badge */}
       {post.isAchievement && (
         <div
           className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold"
@@ -75,7 +76,6 @@ export default function PostCard({ post, index = 0 }: Props) {
         </div>
       )}
 
-      {/* Author header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
           type="button"
@@ -112,7 +112,6 @@ export default function PostCard({ post, index = 0 }: Props) {
         </span>
       </div>
 
-      {/* Content */}
       <div className="px-4 pb-3">
         <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line line-clamp-5 font-[450]">
           {post.content}
@@ -135,27 +134,35 @@ export default function PostCard({ post, index = 0 }: Props) {
         )}
       </div>
 
-      {/* Media */}
       {post.mediaUrl && (
         <div className="px-4 pb-3">
           <div className="rounded-2xl overflow-hidden">
-            <img
-              src={post.mediaUrl}
-              alt="Post media"
-              className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500"
-              loading="lazy"
-            />
+            {isVideo ? (
+              <video
+                src={post.mediaUrl}
+                className="w-full rounded-xl max-h-96 object-cover"
+                controls
+                muted
+                loop
+                playsInline
+              />
+            ) : (
+              <img
+                src={post.mediaUrl}
+                alt="Post media"
+                className="w-full h-52 object-cover hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+              />
+            )}
           </div>
         </div>
       )}
 
-      {/* Engagement counts */}
       <div className="flex items-center gap-4 px-4 py-2 border-t border-black/5 text-slate-400 text-xs">
         <span>{formatCount(likeCount)} likes</span>
         <span>{formatCount(post.commentCount)} comments</span>
       </div>
 
-      {/* Action row */}
       <div className="flex items-center px-2 py-1.5 border-t border-black/5">
         <button
           type="button"

@@ -1,14 +1,18 @@
 import { Search, Send } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { useNav } from "../App";
 import { CURRENT_USER_ID, messages, profiles } from "../data/mockData";
 import type { Message } from "../types";
+
+const ONLINE_USER_IDS = new Set(["u2", "u3"]);
 
 export default function MessagesPage() {
   const { viewProfile } = useNav();
   const [activeUserId, setActiveUserId] = useState("u2");
   const [allMessages, setAllMessages] = useState<Message[]>(messages);
   const [draft, setDraft] = useState("");
+  const [showTyping, setShowTyping] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const partners = Array.from(
@@ -47,11 +51,26 @@ export default function MessagesPage() {
     };
     setAllMessages((prev) => [...prev, newMsg]);
     setDraft("");
+    // Show typing indicator after sending
+    setShowTyping(true);
   };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   });
+
+  // Auto-dismiss typing indicator after 3s
+  useEffect(() => {
+    if (!showTyping) return;
+    const timer = setTimeout(() => setShowTyping(false), 3000);
+    return () => clearTimeout(timer);
+  }, [showTyping]);
+
+  // Reset typing indicator when switching conversations
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset on userId change
+  useEffect(() => {
+    setShowTyping(true);
+  }, [activeUserId]);
 
   return (
     <div className="flex h-[calc(100vh-57px)]" data-ocid="messages.page">
@@ -69,7 +88,7 @@ export default function MessagesPage() {
             />
             <input
               type="search"
-              placeholder="Search conversations…"
+              placeholder="Search conversations\u2026"
               data-ocid="messages.search_input"
               className="w-full pl-7 pr-3 py-1.5 rounded-lg text-xs text-pn-text placeholder-pn-meta border border-pn-border focus:outline-none focus:border-pn-teal transition-colors"
               style={{ background: "oklch(0.13 0.04 215)" }}
@@ -81,16 +100,22 @@ export default function MessagesPage() {
             const partner = profiles.find((p) => p.id === partnerId);
             const last = getLastMessage(partnerId);
             const isActive = partnerId === activeUserId;
+            const isOnline = ONLINE_USER_IDS.has(partnerId);
             if (!partner) return null;
             return (
-              <button
+              <motion.button
                 type="button"
                 key={partnerId}
                 onClick={() => setActiveUserId(partnerId)}
                 data-ocid={`messages.conversation.item.${i + 1}`}
-                className={`w-full flex items-center gap-2.5 px-3 py-3 text-left transition-colors ${
-                  isActive ? "bg-pn-teal/20" : "hover:bg-white/5"
+                className={`w-full flex items-center gap-2.5 px-3 py-3 text-left transition-all duration-200 border-l-2 ${
+                  isActive
+                    ? "bg-pn-teal/20 border-l-[oklch(0.65_0.18_28)]"
+                    : "border-transparent hover:bg-white/10 hover:border-l-[oklch(0.65_0.18_28)]"
                 }`}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.06, ease: "easeOut" }}
               >
                 <div className="relative shrink-0">
                   <img
@@ -98,6 +123,9 @@ export default function MessagesPage() {
                     alt={partner.displayName}
                     className="w-9 h-9 rounded-full"
                   />
+                  {isOnline && (
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-400 border-2 border-[oklch(0.17_0.045_214)]" />
+                  )}
                   {!last?.isRead && last?.toUserId === CURRENT_USER_ID && (
                     <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-pn-gold border border-pn-surface" />
                   )}
@@ -116,7 +144,7 @@ export default function MessagesPage() {
                     {last?.content}
                   </p>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -148,7 +176,16 @@ export default function MessagesPage() {
             >
               {activeProfile?.displayName}
             </button>
-            <div className="text-slate-400 text-xs">{activeProfile?.role}</div>
+            <div className="flex items-center gap-1.5">
+              {ONLINE_USER_IDS.has(activeUserId) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              )}
+              <div className="text-slate-400 text-xs">
+                {ONLINE_USER_IDS.has(activeUserId)
+                  ? "Online"
+                  : activeProfile?.role}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -199,6 +236,35 @@ export default function MessagesPage() {
               </div>
             );
           })}
+
+          {/* Typing indicator */}
+          {showTyping && (
+            <div className="flex items-end gap-2 flex-row animate-slide-left">
+              <img
+                src={activeProfile?.avatarUrl}
+                alt=""
+                className="w-7 h-7 rounded-full shrink-0"
+              />
+              <div
+                className="px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1"
+                style={{ background: "#e2e8f0" }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-typing-dot"
+                  style={{ animationDelay: "0ms" }}
+                />
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-typing-dot"
+                  style={{ animationDelay: "200ms" }}
+                />
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-typing-dot"
+                  style={{ animationDelay: "400ms" }}
+                />
+              </div>
+            </div>
+          )}
+
           <div ref={bottomRef} />
         </div>
 
@@ -212,7 +278,7 @@ export default function MessagesPage() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Type a message…"
+            placeholder="Type a message\u2026"
             data-ocid="messages.input"
             className="flex-1 px-4 py-2.5 rounded-full text-sm text-slate-800 placeholder-slate-400 border border-pn-card-border focus:outline-none focus:border-pn-teal transition-colors"
             style={{ background: "#f1f5f9" }}

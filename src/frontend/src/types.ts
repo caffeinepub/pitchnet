@@ -29,6 +29,7 @@ export interface Post {
   authorId: string;
   content: string;
   mediaUrl: string;
+  mediaType?: "image" | "video";
   postType: string;
   tags: string[];
   likeCount: number;
@@ -41,10 +42,24 @@ export interface Story {
   id: string;
   authorId: string;
   mediaUrl: string;
+  mediaType?: "image" | "video";
   storyType: string;
   caption: string;
   viewCount: number;
   createdAt: string;
+}
+
+export interface PitchVideo {
+  id: string;
+  title: string;
+  description: string;
+  domain: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+  authorId: string;
+  likes: number;
+  views: number;
+  duration: string;
 }
 
 export interface MarketplaceListing {
@@ -91,8 +106,10 @@ export interface Endorsement {
 }
 
 export type Page =
+  | "landing"
   | "feed"
   | "stories"
+  | "pitch"
   | "marketplace"
   | "live"
   | "messages"
